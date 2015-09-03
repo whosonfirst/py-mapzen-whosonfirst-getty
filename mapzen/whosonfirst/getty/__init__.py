@@ -123,6 +123,17 @@ class record(cache):
             # print spo
             yield spo
             
+    def triples_about_me(self):
+
+        for s, p, o in self.triples():
+
+            if s == self.uri():
+                yield (s, p, o)
+
+    def dump(self):
+        for spo in self.triples():
+            print spo
+
     def fetch(self):
 
         url = self.url()
@@ -138,10 +149,7 @@ class record(cache):
 
     def names(self):
         
-        for s, p, o in self.triples():
-
-            if s != self.uri():
-                continue
+        for s, p, o in self.triples_about_me():
 
             if p != 'label':
                 continue
@@ -162,7 +170,24 @@ class tgn(record):
     def __init__(self, id):
 
         record.__init__(self, "http://vocab.getty.edu/tgn/", id)
-        
+
+    def ancestors(self):
+
+        for s, p, o in self.triples_about_me():
+
+            if p != 'broaderTransitive':
+                continue
+
+            root = os.path.dirname(o) + "/"
+
+            if root != "http://vocab.getty.edu/tgn/" :
+                continue
+                
+            id = os.path.basename(o)
+
+            ancestor = tgn(id)
+            yield ancestor
+            
     def placetypes(self):
 
         for s, p, o in self.triples():
@@ -189,3 +214,16 @@ if __name__ == '__main__':
     print list(p.names())
     print list(p.placetypes())
 
+    print ""
+
+    for a in p.ancestors():
+
+        n = a.names()
+        t = a.placetypes()
+
+        n = n.next()
+        t = list(t)
+
+        print "%s, %s" % (n, t)
+
+    

@@ -79,18 +79,22 @@ class nt:
 
         return (s, p, o)
 
+# please add some smarts to periodically purge
+# this so that it doesn't eat its host computer
+# (20150903/thisisaaronland)
+
 class cache:
 
     def __init__(self):
         self.cache = {}
 
-    def get(self, k):
+    def cache_get(self, k):
         return self.cache.get(k, None)
         
-    def set(self, k, v):
+    def cache_set(self, k, v):
         self.cache[k] = v
 
-    def unset(self, k):
+    def cache_unset(self, k):
         if self.cache.get(k, None):
             del(self.cache[k])
 
@@ -122,14 +126,14 @@ class record(cache):
     def fetch(self):
 
         url = self.url()
-        cache = self.get(url)
+        cache = self.cache_get(url)
 
         if cache:
             return cache
 
         rsp = nt(url=url)
         
-        self.set(url, rsp)
+        self.cache_set(url, rsp)
         return rsp
 
     def names(self):
@@ -144,6 +148,9 @@ class record(cache):
 
             yield o
 
+# please to me MOAR BETTER about vocabulary URL definitions
+# and lookups and trailing slashes (20150903/thisisaaronland)
+
 class aat(record):
 
     def __init__(self, id):
@@ -155,15 +162,17 @@ class tgn(record):
     def __init__(self, id):
 
         record.__init__(self, "http://vocab.getty.edu/tgn/", id)
-
-    def types(self):
+        
+    def placetypes(self):
 
         for s, p, o in self.triples():
 
             if s == self.uri() and p == 'placeType':
                 
-                # please to check MOAR BETTER for AAT-iness
-                # (21050903/thisisaaronland)
+                root = os.path.dirname(o) + "/"
+
+                if root != "http://vocab.getty.edu/aat/" :
+                    continue
 
                 id = os.path.basename(o)
                 a = aat(id)
@@ -178,5 +187,5 @@ if __name__ == '__main__':
     p = tgn(id)
 
     print list(p.names())
-    print list(p.types())
+    print list(p.placetypes())
 

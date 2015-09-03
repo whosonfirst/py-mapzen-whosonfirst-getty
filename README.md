@@ -20,7 +20,7 @@ id = 7013051
 place = mapzen.whosonfirst.getty.tgn(id)
 
 print list(place.names())
-print list(place.types())
+print list(place.placetypes())
 ```
 
 Which should yield something like this:

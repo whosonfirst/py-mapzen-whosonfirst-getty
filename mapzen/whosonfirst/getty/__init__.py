@@ -171,6 +171,40 @@ class tgn(record):
 
         record.__init__(self, "http://vocab.getty.edu/tgn/", id)
 
+    def note(self):
+
+        note_uri = None
+        note = None
+
+        for s, p, o in self.triples_about_me():
+
+            if p != 'scopeNote':
+                continue
+
+            root = os.path.dirname(o)
+
+            if root != 'http://vocab.getty.edu/tgn/scopeNote':
+                continue
+
+            note_uri = o
+            break
+
+        if not note_uri:
+            return None
+
+        for s, p, o in self.triples():
+
+            if s != note_uri:
+                continue
+
+            if p != 'value':
+                continue
+
+            note = o
+            break
+
+        return note
+
     def ancestors(self):
 
         for s, p, o in self.triples_about_me():
@@ -207,9 +241,14 @@ class tgn(record):
 
 if __name__ == '__main__':
 
-    id = 7013051
+    id = 7007826
 
     p = tgn(id)
+
+    print list(p.names())
+    print p.note()
+
+    sys.exit()
 
     print list(p.names())
     print list(p.placetypes())

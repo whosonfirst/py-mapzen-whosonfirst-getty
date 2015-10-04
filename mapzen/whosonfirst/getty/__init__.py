@@ -100,7 +100,76 @@ def _callback_wrapper(args):
     except Exception, e:
         logging.error("Failed to process feature because %s" % e)
         raise Exception, e
-    
+
+# basically everything in this class should be moved in to a properly
+# generic 'working-with-geojson' class so I can stop rewriting it over
+# and over and over again (20151004/thisisaaronland)
+
+import mapzen.whosonfirst.geojson
+import atomicwrites
+
+class exporter:
+
+    def __init__(self, root):
+
+        encoder = mapzen.whosonfirst.geojson.encoder()
+        self.encoder = encoder 
+
+        self.root = root
+
+    def feature2abspath(self, feature):
+
+        rel_path = self.feature2relpath(feature)
+        return os.path.join(self.root, rel_path)
+
+    def feature2relpath(self, feature):
+
+        if feature.get('id', False):
+            return self.id2abspath(feature.get('id'))
+
+        props = feature.get('properties', {})
+        id = props.get('tgn:id', 0)
+
+        return self.id2relpath(id)
+
+    def id2abspath(self, id):
+
+        rel_path = self.id2relpath(id)
+        return os.path.join(self.root, rel_path)
+        
+    def id2relpath(self, id):
+
+        path = self.id2path(id)
+        fname = self.id2fname(id)
+        
+        return os.path.join(path, fname)
+
+    def id2path(self, id):
+
+        tmp = str(id)
+        parts = []
+        
+        while len(tmp) > 3:
+            parts.append(tmp[0:3])
+            tmp = tmp[3:]
+            
+        if len(tmp):
+            parts.append(tmp)
+
+        return "/".join(parts)
+
+    def id2fname(self, id):
+        return "%s.geojson" % id
+
+    def export_feature(self, feature):
+
+        abs_path = self.feature2abspath(feature)
+
+        with atomicwrites.atomic_write(abs_path, overwrite=True) as fh:
+            self.encoder.encode_feature(feature, fh)
+
+        return abs_path
+
 # some of this could be moved in to a generic mapzen.whosonfirst.rdfmoonlanguage base class
 # (20150903/thisisaaronland)
         

@@ -9,6 +9,8 @@ documentation which will probably make it hard for you to use unless
 you are willing to poke and around and investigate things on your
 own.
 
+Also, this package currently suffers a bit of kitchen-sink-ism. That is it contains functions and classes that could and probably should be moved in to separate libraries. Soon soon...
+
 ## Usage
 
 ### Example

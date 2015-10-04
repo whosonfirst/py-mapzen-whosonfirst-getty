@@ -8,9 +8,102 @@ import os.path
 import logging
 import sys
 
+# the crawl stuff can / should probably go in a 'utils' package or really
+# a 'getty.geojson' package...
+# (20151004/thisisaaronland)
+
+import geojson
+import multiprocessing
+import signal
+
+def crawl(source, **kwargs):
+
+    validate = kwargs.get('validate', False)
+    inflate = kwargs.get('inflate', False)
+
+    for (root, dirs, files) in os.walk(source):
+
+        for f in files:
+            path = os.path.join(root, f)
+            path = os.path.abspath(path)
+
+            ret = path
+
+            if not path.endswith('geojson'):
+                continue
+
+            if validate or inflate:
+
+                try:
+                    fh = open(path, 'r')
+                    data = geojson.load(fh)
+
+                except Exception, e:
+                    logging.error("failed to load %s, because %s" % (path, e))
+                    continue
+
+                if not inflate:
+                    ret = path
+                else:
+                    ret = data
+
+            yield ret
+
+def crawl_with_callback(source, callback, **kwargs):
+
+    iter = crawl(source, **kwargs)
+
+    if kwargs.get('multiprocessing', False):
+
+        processes = multiprocessing.cpu_count() * 2
+        pool = multiprocessing.Pool(processes=processes)
+
+        def sigint_handler(signum, frame):
+            logging.warning("Received interupt handler (in crawl_with_callback scope) so exiting")
+            pool.terminate()
+            sys.exit()
+
+        signal.signal(signal.SIGINT, sigint_handler)
+
+        batch = []
+        batch_size = kwargs.get('multiprocessing_batch_size', 1000)
+
+        for rsp in iter:
+
+            batch.append((callback, rsp))
+
+            if len(batch) >= batch_size:
+
+                pool.map(_callback_wrapper, batch)
+                batch = []
+
+        if len(batch):
+            pool.map(_callback_wrapper, batch)
+
+    else:
+
+        for rsp in iter:
+            callback(rsp)
+
+# Dunno - python seems all sad and whingey if this gets defined in
+# the (crawl_with_callback) scope above so whatever...
+# (20150902/thisisaaronland)
+
+def _callback_wrapper(args):
+
+    callback, feature = args
+
+    try:
+        callback(feature)
+    except KeyboardInterrupt:
+        logging.warning("Received interupt handler (in callback wrapper scope) so exiting")
+    except Exception, e:
+        logging.error("Failed to process feature because %s" % e)
+        raise Exception, e
+    
 # some of this could be moved in to a generic mapzen.whosonfirst.rdfmoonlanguage base class
 # (20150903/thisisaaronland)
-
+        
 class nt:
 
     def __init__ (self, **kwargs):

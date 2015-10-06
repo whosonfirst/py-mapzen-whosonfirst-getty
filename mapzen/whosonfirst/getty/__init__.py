@@ -309,14 +309,53 @@ class record(cache):
         self.cache_set(url, rsp)
         return rsp
 
-    def names(self):
-        
+    def prefLabels(self, **kwargs):
+
+        prune = kwargs.get('prune_links', False)
+
         for s, p, o in self.triples_about_me():
 
-            if p != 'label':
+            if p != 'prefLabel':
+                continue
+                
+            if prune and o.startswith('http'):
                 continue
 
             yield o
+
+    def names(self):
+
+        return self.require_p('label')
+
+    def require_p(self, value):
+
+        for s, p, o in self.triples_about_me():
+
+            if p != value:
+                continue
+
+            yield o
+
+# as in: http://vocab.getty.edu/aat/term/1000571284-en
+
+class term(record):
+
+    def __init__(self, compound_id):
+
+        if compound_id.startswith('http'):
+            compound_id = os.path.basename(compound_id)
+
+        record.__init__(self, "http://vocab.getty.edu/aat/term/", compound_id)
+
+        uid, lang = compound_id.split("-", 1)
+        self.uid = uid
+        self.lang = lang
+
+    def term(self):
+        return self.require_p('term')
+
+    def literal(self):
+        return self.require_p('literalForm')
 
 # please to me MOAR BETTER about vocabulary URL definitions
 # and lookups and trailing slashes (20150903/thisisaaronland)

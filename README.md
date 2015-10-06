@@ -49,6 +49,10 @@ Québec, [u'first level subdivisions (political entities)', u'first level subdiv
 Montréal, Île de, [u'islands (landforms)', u'island (landform)', u'isles', u'eilanden', u'eiland', u'islas', u'isla']
 ```
 
+## To do
+
+* Actual documentation. On the other hand I am still trying to make some sense of TGN _at all_ so it's all a bit of a moving target still.
+
 ## See also
 
 * https://github.com/whosonfirst/whosonfirst-data/

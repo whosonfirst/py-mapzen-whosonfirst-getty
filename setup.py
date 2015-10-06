@@ -8,7 +8,7 @@ desc = open("README.md").read(),
 setup(
     name='mapzen.whosonfirst.getty',
     namespace_packages=['mapzen', 'mapzen.whosonfirst', 'mapzen.whosonfirst.getty'],
-    version='0.02',
+    version='0.03',
     description='Python tools for working with Getty controlled vocabularies (and Who\'s On Firstdata)',
     author='Mapzen',
     url='https://github.com/mapzen/py-mapzen-whosonfirst-getty',
@@ -25,5 +25,5 @@ setup(
     packages=packages,
     scripts=[
     ],
-    download_url='https://github.com/mapzen/py-mapzen-whosonfirst-getty/releases/tag/v0.02',
+    download_url='https://github.com/mapzen/py-mapzen-whosonfirst-getty/releases/tag/v0.03',
     license='BSD')

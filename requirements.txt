@@ -1,0 +1,5 @@
+requests
+rdflib
+geojson
+atomicwrites
+git+git://github.com/whosonfirst/py-mapzen-whosonfirst-geojson
